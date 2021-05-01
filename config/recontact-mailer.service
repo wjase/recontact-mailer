@@ -1,0 +1,14 @@
+[Unit]
+Description=Recaptcha contact mailer container
+After=docker.service
+Wants=network-online.target docker.socket
+Requires=docker.socket
+ 
+[Service]
+Restart=always
+ExecStartPre=/bin/bash -c "/usr/bin/docker container inspect recontact-mailer 2> /dev/null || /usr/bin/docker run -d --name recontact-mailer --privileged -p 9000:9000  --env-file /etc/recontact-mailer/env.txt recontact-mailer/latest"
+ExecStart=/usr/bin/docker start -a recontact-mailer
+ExecStop=/usr/bin/docker stop -t 10 recontact-mailer
+ 
+[Install]
+WantedBy=multi-user.target

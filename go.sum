@@ -1,0 +1,4 @@
+github.com/corbym/gocrest v1.0.5 h1:6FUvLjKkKQ2hwMel8OKIZqN3slYEOHIFY9+lVaroFnU=
+github.com/corbym/gocrest v1.0.5/go.mod h1:lF3xBPnOU5DYDpa/vUq63SMxUhd5UAwGgmA8Z2pJ/Tk=
+github.com/dpapathanasiou/go-recaptcha v0.0.0-20190121160230-be5090b17804 h1:gFnPvL9HX+Nrb4M2AwzFYqcwGStxYZpuDpFAqpViBG4=
+github.com/dpapathanasiou/go-recaptcha v0.0.0-20190121160230-be5090b17804/go.mod h1:eovtlS/D2AGk8vy2a9sO4XzOyHMHb8jM+WPsf9pkgFo=
