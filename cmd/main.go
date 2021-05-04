@@ -53,13 +53,13 @@ func NewAppEnv() AppEnv {
 	}
 }
 
-var appEnv = NewAppEnv()
-
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
 func main() {
+	appEnv := NewAppEnv()
+
 	logger.Println("Starting recontact-mailer...")
 	recaptcha.Init(appEnv.privateKey)
 
