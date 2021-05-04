@@ -18,48 +18,38 @@ import (
 	"github.com/dpapathanasiou/go-recaptcha"
 )
 
+var logger = log.Default()
+
 type AppEnv struct {
 	privateKey string
 	toEmail    string
 	adminEmail string
-	// emailUsername string
-	// emailPassword string
-	emailHost string
-	emailPort string
-	appPort   string
-	endpoint  string
+	emailHost  string
+	emailPort  string
+	appPort    string
+	endpoint   string
 }
 
-func ensureNotBlank(name string, s string) bool {
-	if len(s) == 0 {
-		fmt.Printf("Unexpected blank property %s\n", s)
-		return false
+func ensureEnvNotBlank(name string) string {
+	if val, ok := os.LookupEnv(name); !ok {
+		logger.Printf("Unexpected blank property %s\n", name)
+		panic(fmt.Sprintf("Unexpected blank property %s\n", name))
+	} else {
+		return val
 	}
-	return true
-}
-
-func (a AppEnv) validate() bool {
-	return ensureNotBlank("privateKey", a.privateKey) &&
-		ensureNotBlank("toEmail", a.toEmail) &&
-		ensureNotBlank("adminEmail", a.adminEmail) &&
-		// ensureNotBlank("emailUsername", a.emailUsername) &&
-		// ensureNotBlank("emailPassword", a.emailPassword) &&
-		ensureNotBlank("emailHost", a.emailHost) &&
-		ensureNotBlank("emailPort", a.emailPort) &&
-		ensureNotBlank("appPort", a.appPort) &&
-		ensureNotBlank("endpoint", a.endpoint)
 }
 
 // NewAppEnv cerates a new env.
 func NewAppEnv() AppEnv {
+
 	return AppEnv{
-		privateKey: os.Getenv("RECAPTCHA_PRIVATE_KEY"),
-		toEmail:    os.Getenv("TO_MAIL"),
-		adminEmail: os.Getenv("ADMIN_MAIL"),
-		emailHost:  os.Getenv("EMAIL_HOST"),
-		emailPort:  os.Getenv("EMAIL_PORT"),
-		appPort:    os.Getenv("APP_PORT"),
-		endpoint:   os.Getenv("ENDPOINT"),
+		privateKey: ensureEnvNotBlank("RECAPTCHA_PRIVATE_KEY"),
+		toEmail:    ensureEnvNotBlank("TO_MAIL"),
+		adminEmail: ensureEnvNotBlank("ADMIN_MAIL"),
+		emailHost:  ensureEnvNotBlank("EMAIL_HOST"),
+		emailPort:  ensureEnvNotBlank("EMAIL_PORT"),
+		appPort:    ensureEnvNotBlank("APP_PORT"),
+		endpoint:   ensureEnvNotBlank("ENDPOINT"),
 	}
 }
 
@@ -70,13 +60,8 @@ func init() {
 }
 
 func main() {
-	logger := log.Default()
 	logger.Println("Starting recontact-mailer...")
 	recaptcha.Init(appEnv.privateKey)
-
-	if !appEnv.validate() {
-		logger.Println("Env validate failed. Stopping")
-	}
 
 	// send happy email
 	err := SendMail("127.0.0.1:25", (&mail.Address{Name: "App Admin", Address: appEnv.adminEmail}).String(), "Email Subject", "Recapture started successfully", []string{(&mail.Address{Name: "admin", Address: appEnv.adminEmail}).String()})
