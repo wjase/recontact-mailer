@@ -70,17 +70,23 @@ func init() {
 }
 
 func main() {
+	logger := log.Default()
+	logger.Println("Starting recontact-mailer...")
 	recaptcha.Init(appEnv.privateKey)
 
 	if !appEnv.validate() {
-		fmt.Println("Env validate failed. Stopping")
+		logger.Println("Env validate failed. Stopping")
 	}
 
 	// send happy email
-	SendMail("127.0.0.1:25", (&mail.Address{Name: "App Admin", Address: appEnv.adminEmail}).String(), "Email Subject", "Recapture started successfully", []string{(&mail.Address{Name: "admin", Address: appEnv.adminEmail}).String()})
+	err := SendMail("127.0.0.1:25", (&mail.Address{Name: "App Admin", Address: appEnv.adminEmail}).String(), "Email Subject", "Recapture started successfully", []string{(&mail.Address{Name: "admin", Address: appEnv.adminEmail}).String()})
+	if err != nil {
+		logger.Fatal("failed to send mail", err)
+	}
 
 	http.HandleFunc("/contactform", buildHandleContactFormFn(SendMail, recaptcha.Confirm, appEnv))
+	logger.Println("About To start server")
 	if err := http.ListenAndServe(fmt.Sprintf(":%s", appEnv.appPort), nil); err != nil {
-		log.Fatal("failed to start server", err)
+		logger.Fatal("failed to start server", err)
 	}
 }
