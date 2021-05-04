@@ -5,6 +5,7 @@ FROM golang:alpine AS builder
 # Install git.
 # Git is required for fetching the dependencies.
 RUN apk update && apk add --no-cache git
+
 # Create appuser.
 ENV USER=appuser
 ENV UID=10001 
@@ -17,12 +18,18 @@ RUN adduser \
     --no-create-home \    
     --uid "${UID}" \    
     "${USER}"
+
 WORKDIR /app/
-COPY . /app
+
 # Fetch dependencies.
-# Using go mod.
+# Using go mod - only need go.mod and go.sum and need to cache based on these layers
+COPY go.mod /app
+COPY go.sum /app
+
 RUN go mod download all
 RUN go mod verify
+COPY . /app
+
 # Build the binary.
 RUN GO111MODULE=on GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/app /app/cmd/...
 
@@ -30,6 +37,7 @@ RUN GO111MODULE=on GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/
 # STEP 2 build a small image
 ############################
 FROM scratch
+
 # Import the user and group files from the builder.
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
@@ -37,5 +45,6 @@ COPY --from=builder /etc/group /etc/group
 COPY --from=builder /go/bin/app /go/bin/app
 # Use an unprivileged user.
 USER appuser:appuser
+
 # Run the hello binary.
 ENTRYPOINT ["/go/bin/app"]
