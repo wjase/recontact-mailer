@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"net/smtp"
 	"strings"
 	"testing"
 
@@ -25,12 +24,12 @@ var testAppEnv = AppEnv{
 }
 
 func sendMatcherFn(matcher *gocrest.Matcher, t *testing.T) sendFn {
-	return func(addr string, a smtp.Auth, from string, to []string, msg []byte) error {
+	//type sendFn func(addr, from, subject, body string, to []string) error
+	return func(addr string, from string, subject string, body string, to []string) error {
 		then.AssertThat(t, mailArgs{Addr: addr,
-			Auth: a,
 			From: from,
 			To:   to,
-			Msg:  msg,
+			Msg:  body,
 		}, matcher)
 		return nil
 	}
@@ -70,12 +69,9 @@ func TestContactHandler(t *testing.T) {
 			testName: "happy case valid captcha",
 			sendFn: sendMatcherFn(is.EqualTo(mailArgs{
 				Addr: "somehost:somePort",
-				Auth: smtp.PlainAuth("", "emailUser", "emailPass", "somehost"),
 				From: "bob@bob.com",
 				To:   []string{"to@some.com"},
-				Msg: []byte(`Subject: a thing
-
-a message`),
+				Msg:  `a message`,
 			}), t),
 			confirmFn:   confirmOK,
 			requestBody: happyCasePayloadJson,

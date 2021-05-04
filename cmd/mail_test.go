@@ -46,6 +46,8 @@ func TestCreateToAddress(t *testing.T) {
 func TestBuildBody(t *testing.T) {
 	testCases := []struct {
 		desc    string
+		to      []string
+		from    string
 		subject string
 		body    string
 		want    string
@@ -53,17 +55,22 @@ func TestBuildBody(t *testing.T) {
 		{
 			desc:    "happy case",
 			subject: "asubject",
+			to:      []string{"recipient@host.com"},
+			from:    "frodo@baggins.com",
 			body:    "a body\nline 2",
-			want: `Subject: asubject
+			want: `To: recipient@host.com
+From: frodo@baggins.com
+Subject: asubject
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: base64
 
-a body
-line 2`,
+YSBib2R5CmxpbmUgMg==`,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			actual := buildBody(tC.subject, tC.body)
-			then.AssertThat(t, string(actual), is.EqualTo(tC.want))
+			actual := buildBody(tC.to, tC.from, tC.subject, tC.body)
+			then.AssertThat(t, whitespaceRemover.Replace(string(actual)), is.EqualTo(whitespaceRemover.Replace(tC.want)))
 		})
 	}
 }

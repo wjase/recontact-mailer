@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"net/smtp"
 	"time"
 )
 
 type confirmFn func(remoteip, response string) (result bool, err error)
-type sendFn func(addr string, a smtp.Auth, from string, to []string, msg []byte) error
+type sendFn func(addr, from, subject, body string, to []string) error
 
 func buildHandleContactFormFn(sendFn sendFn, confirmFn confirmFn, env AppEnv) func(writer http.ResponseWriter, request *http.Request) {
 	return func(writer http.ResponseWriter, request *http.Request) {
@@ -34,12 +33,10 @@ func buildHandleContactFormFn(sendFn sendFn, confirmFn confirmFn, env AppEnv) fu
 			}
 			m := mailArgs{
 				Addr: env.emailHost + ":" + env.emailPort,
-				Auth: smtp.PlainAuth("", env.emailUsername, env.emailPassword, env.emailHost),
 				From: contactRequest.Email,
 				To:   toList,
-				Msg:  buildBody(contactRequest.Subject, contactRequest.Message),
 			}
-			sendFn(m.Addr, m.Auth, m.From, m.To, m.Msg)
+			sendFn(m.Addr, m.From, contactRequest.Subject, contactRequest.Message, m.To)
 		} else {
 			time.Sleep(time.Duration(rand.Intn(8)) * time.Second)
 		}

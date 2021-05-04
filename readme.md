@@ -26,7 +26,7 @@ the contents to a specified address if the recaptacha check succeeds.
 
  4. Enable the service to start at system startup 
     
-    `systemctl enble recontact-mailer.service` 
+    `systemctl enable recontact-mailer.service` 
 
  5. Start the service:
  
