@@ -6,7 +6,7 @@ Requires=docker.socket
  
 [Service]
 Restart=always
-ExecStartPre=/bin/bash -c "/usr/bin/docker container inspect recontact-mailer 2> /dev/null || /usr/bin/docker run -d --name recontact-mailer -p 7500:7500  --env-file /etc/recontact-mailer/env.txt recontact-mailer/latest"
+ExecStartPre=/bin/bash -c "/usr/bin/docker container inspect recontact-mailer 2> /dev/null || /usr/bin/docker run -d --name recontact-mailer -p 7500:7500  --env-file /etc/recontact-mailer/env.txt recontact-mailer:latest"
 ExecStart=/usr/bin/docker start -a recontact-mailer
 ExecStop=/usr/bin/docker stop -t 10 recontact-mailer
  
