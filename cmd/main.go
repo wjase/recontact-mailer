@@ -12,66 +12,33 @@ import (
 	"math/rand"
 	"net/http"
 	"net/mail"
-	"os"
 	"time"
 
 	"github.com/dpapathanasiou/go-recaptcha"
+	"github.com/wjase/recontact-mailer/internal/recontact"
 )
 
 var logger = log.Default()
-
-type AppEnv struct {
-	privateKey string
-	toEmail    string
-	adminEmail string
-	emailHost  string
-	emailPort  string
-	appPort    string
-	endpoint   string
-}
-
-func ensureEnvNotBlank(name string) string {
-	if val, ok := os.LookupEnv(name); !ok {
-		logger.Printf("Unexpected blank property %s\n", name)
-		panic(fmt.Sprintf("Unexpected blank property %s\n", name))
-	} else {
-		return val
-	}
-}
-
-// NewAppEnv cerates a new env.
-func NewAppEnv() AppEnv {
-
-	return AppEnv{
-		privateKey: ensureEnvNotBlank("RECAPTCHA_PRIVATE_KEY"),
-		toEmail:    ensureEnvNotBlank("TO_MAIL"),
-		adminEmail: ensureEnvNotBlank("ADMIN_MAIL"),
-		emailHost:  ensureEnvNotBlank("EMAIL_HOST"),
-		emailPort:  ensureEnvNotBlank("EMAIL_PORT"),
-		appPort:    ensureEnvNotBlank("APP_PORT"),
-		endpoint:   ensureEnvNotBlank("ENDPOINT"),
-	}
-}
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
 func main() {
-	appEnv := NewAppEnv()
+	appEnv := recontact.NewAppEnv()
 
 	logger.Println("Starting recontact-mailer...")
-	recaptcha.Init(appEnv.privateKey)
+	recaptcha.Init(appEnv.PrivateKey)
 
 	// send happy email
-	err := SendMail("127.0.0.1:25", (&mail.Address{Name: "App Admin", Address: appEnv.adminEmail}).String(), "Email Subject", "Recapture started successfully", []string{(&mail.Address{Name: "admin", Address: appEnv.adminEmail}).String()})
+	err := recontact.SendMail("127.0.0.1:25", (&mail.Address{Name: "App Admin", Address: appEnv.AdminEmail}).String(), "Email Subject", "Recapture started successfully", []string{(&mail.Address{Name: "admin", Address: appEnv.AdminEmail}).String()})
 	if err != nil {
 		logger.Fatal("failed to send mail", err)
 	}
 
-	http.HandleFunc("/contactform", buildHandleContactFormFn(SendMail, recaptcha.Confirm, appEnv))
+	http.HandleFunc("/contactform", recontact.BuildHandleContactFormFn(recontact.SendMail, recaptcha.Confirm, appEnv))
 	logger.Println("About To start server")
-	if err := http.ListenAndServe(fmt.Sprintf(":%s", appEnv.appPort), nil); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", appEnv.AppPort), nil); err != nil {
 		logger.Fatal("failed to start server", err)
 	}
 }

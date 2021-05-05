@@ -1,4 +1,4 @@
-package main
+package recontact
 
 import (
 	"bytes"

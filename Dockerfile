@@ -31,7 +31,8 @@ RUN go mod verify
 COPY . /app
 
 # Build the binary.
-RUN GO111MODULE=on GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o appbin /app/cmd/...
+ENV CGO_ENABLED 0
+RUN GO111MODULE=on GOOS=linux GOARCH=amd64 go build -ldflags '-extldflags "-static"' -tags timetzdata -o appbin /app/cmd/...
 
 ############################
 # STEP 2 build a small image
@@ -45,6 +46,8 @@ COPY --from=builder /etc/group /etc/group
 COPY --from=builder /app/appbin /app/appbin
 # Use an unprivileged user.
 USER appuser:appuser
+
+COPY --from=alpine:latest /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 # Run the hello binary.
 ENTRYPOINT ["/app/appbin"]

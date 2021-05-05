@@ -1,4 +1,4 @@
-module github.com/wjase/recaptcha
+module github.com/wjase/recontact-mailer
 
 go 1.16
 

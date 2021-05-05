@@ -1,4 +1,4 @@
-package main
+package recontact
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 type confirmFn func(remoteip, response string) (result bool, err error)
 type sendFn func(addr, from, subject, body string, to []string) error
 
-func buildHandleContactFormFn(sendFn sendFn, confirmFn confirmFn, env AppEnv) func(writer http.ResponseWriter, request *http.Request) {
+func BuildHandleContactFormFn(sendFn sendFn, confirmFn confirmFn, env AppEnv) func(writer http.ResponseWriter, request *http.Request) {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		contactRequest, err := NewContactRequest(request)
 		if err != nil {
@@ -24,7 +24,7 @@ func buildHandleContactFormFn(sendFn sendFn, confirmFn confirmFn, env AppEnv) fu
 		}
 		if result {
 			// toList is list of email address that email is to be sent.
-			toList, err := toList(env.toEmail)
+			toList, err := toList(env.ToEmail)
 
 			if err != nil {
 				fmt.Printf("Bad email to address %s", err.Error())
@@ -32,7 +32,7 @@ func buildHandleContactFormFn(sendFn sendFn, confirmFn confirmFn, env AppEnv) fu
 				return
 			}
 			m := mailArgs{
-				Addr: env.emailHost + ":" + env.emailPort,
+				Addr: env.EmailHost + ":" + env.EmailPort,
 				From: contactRequest.Email,
 				To:   toList,
 			}
