@@ -37,7 +37,7 @@ func main() {
 	}
 
 	http.HandleFunc("/contactform", recontact.BuildHandleContactFormFn(recontact.SendMail, recaptcha.Confirm, appEnv))
-	logger.Println("About To start server")
+	logger.Printf("About To start server on port %s\n", appEnv.AppPort)
 	if err := http.ListenAndServe(fmt.Sprintf(":%s", appEnv.AppPort), nil); err != nil {
 		logger.Fatal("failed to start server", err)
 	}

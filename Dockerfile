@@ -31,8 +31,7 @@ RUN go mod verify
 COPY . /app
 
 # Build the binary.
-ENV CGO_ENABLED 0
-RUN GO111MODULE=on GOOS=linux GOARCH=amd64 go build -ldflags '-extldflags "-static"' -tags timetzdata -o appbin /app/cmd/...
+RUN CGO_ENABLED=0 GO111MODULE=on GOOS=linux go build -a -installsuffix -ldflags="-extldflags=-static" -tags timetzdata -o appbin ./cmd
 
 ############################
 # STEP 2 build a small image
