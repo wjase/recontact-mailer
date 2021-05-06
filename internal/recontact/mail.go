@@ -1,15 +1,17 @@
 package recontact
 
 import (
-	"encoding/base64"
 	"fmt"
+	"io"
 	"net/smtp"
+	"os"
+	"os/exec"
 	"regexp"
-	"strings"
+
+	"gopkg.in/gomail.v2"
 )
 
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-var whitespaceRemover = strings.NewReplacer("\r\n", "", "\r", "", "\n", "", "%0a", "", "%0d", "")
 
 type mailArgs struct {
 	Addr string
@@ -30,45 +32,46 @@ func toList(addr string) ([]string, error) {
 	return []string{}, fmt.Errorf("malformed email")
 }
 
-func buildBody(to []string, from, subject, body string) []byte {
-	return []byte("To: " + strings.Join(to, ",") + "\r\n" +
-		"From: " + from + "\r\n" +
-		"Subject: " + subject + "\r\n" +
-		"Content-Type: text/html; charset=\"UTF-8\"\r\n" +
-		"Content-Transfer-Encoding: base64\r\n" +
-		"\r\n" + base64.StdEncoding.EncodeToString([]byte(body)))
-}
-
 //ex: SendMail("127.0.0.1:25", (&mail.Address{"from name", "from@example.com"}).String(), "Email Subject", "message body", []string{(&mail.Address{"to name", "to@example.com"}).String()})
 func SendMail(addr, from, subject, body string, to []string) error {
 
-	c, err := smtp.Dial(addr)
+	m := gomail.NewMessage()
+	m.SetHeader("From", from)
+	m.SetHeader("To", to...)
+	// m.SetAddressHeader("Cc", "dan@example.com", "Dan")
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
+	s := gomail.SendFunc(submitMail)
+
+	return gomail.Send(s, m)
+
+}
+
+const sendmail = "/usr/sbin/sendmail"
+
+func submitMail(from string, to []string, m io.WriterTo) (err error) {
+	cmd := exec.Command(sendmail, "-t")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	pw, err := cmd.StdinPipe()
 	if err != nil {
-		return err
+		return
 	}
-	defer c.Close()
-	if err = c.Mail(whitespaceRemover.Replace(from)); err != nil {
-		return err
+
+	err = cmd.Start()
+	if err != nil {
+		return
 	}
-	for i := range to {
-		to[i] = whitespaceRemover.Replace(to[i])
-		if err = c.Rcpt(to[i]); err != nil {
-			return err
+
+	var errs [3]error
+	_, errs[0] = m.WriteTo(pw)
+	errs[1] = pw.Close()
+	errs[2] = cmd.Wait()
+	for _, err = range errs {
+		if err != nil {
+			return
 		}
 	}
-
-	w, err := c.Data()
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Write(buildBody(to, from, subject, body))
-	if err != nil {
-		return err
-	}
-	err = w.Close()
-	if err != nil {
-		return err
-	}
-	return c.Quit()
+	return
 }

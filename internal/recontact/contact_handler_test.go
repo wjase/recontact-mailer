@@ -16,11 +16,9 @@ import (
 )
 
 var testAppEnv = AppEnv{
-	toEmail:       "to@some.com",
-	emailHost:     "somehost",
-	emailPort:     "somePort",
-	emailUsername: "emailUser",
-	emailPassword: "emailPass",
+	ToEmail:   "to@some.com",
+	EmailHost: "somehost",
+	EmailPort: "somePort",
 }
 
 func sendMatcherFn(matcher *gocrest.Matcher, t *testing.T) sendFn {
@@ -56,7 +54,7 @@ func TestContactHandler(t *testing.T) {
 		}`
 
 	badEnv := testAppEnv
-	badEnv.toEmail = "badbad"
+	badEnv.ToEmail = "badbad"
 
 	testCases := []struct {
 		testName    string
@@ -107,7 +105,7 @@ func TestContactHandler(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.testName, func(t *testing.T) {
-			handler := buildHandleContactFormFn(tC.sendFn, tC.confirmFn, tC.env)
+			handler := BuildHandleContactFormFn(tC.sendFn, tC.confirmFn, tC.env)
 			request := http.Request{
 				Host:   "AHost",
 				Body:   ioutil.NopCloser(bytes.NewReader([]byte(tC.requestBody))),
