@@ -44,7 +44,11 @@ func BuildHandleContactFormFn(sendFn sendFn, confirmFn confirmFn, env AppEnv) fu
 				From: contactRequest.Email,
 				To:   toList,
 			}
-			sendFn(m.Addr, m.From, contactRequest.Subject, contactRequest.Message, m.To)
+
+			err = sendFn(m.Addr, m.From, contactRequest.Subject, contactRequest.Message, m.To)
+			if err != nil {
+				fmt.Printf("Couldn't send message %s", contactRequest.Message)
+			}
 		} else {
 			time.Sleep(time.Duration(rnd.Intn(8)) * time.Second)
 		}
