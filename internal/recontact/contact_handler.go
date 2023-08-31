@@ -1,11 +1,14 @@
 package recontact
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
 	"time"
 )
+
+var rnd = rand.New(rand.NewSource(time.Now().Unix()))
 
 type confirmFn func(remoteip, response string) (result bool, err error)
 type sendFn func(addr, from, subject, body string, to []string) error
@@ -17,9 +20,14 @@ func BuildHandleContactFormFn(sendFn sendFn, confirmFn confirmFn, env AppEnv) fu
 			fmt.Fprintf(writer, "false")
 			return
 		}
+
+		bytes, _ := json.Marshal(contactRequest)
+		fmt.Printf("contact: <%s>", string(bytes))
+
 		result, err := confirmFn(GetIP(request), contactRequest.Recaptcha)
 		if err != nil {
 			fmt.Fprintf(writer, "false")
+			fmt.Println("recaptcha failed", string(bytes))
 			return
 		}
 		if result {
@@ -38,7 +46,7 @@ func BuildHandleContactFormFn(sendFn sendFn, confirmFn confirmFn, env AppEnv) fu
 			}
 			sendFn(m.Addr, m.From, contactRequest.Subject, contactRequest.Message, m.To)
 		} else {
-			time.Sleep(time.Duration(rand.Intn(8)) * time.Second)
+			time.Sleep(time.Duration(rnd.Intn(8)) * time.Second)
 		}
 	}
 }

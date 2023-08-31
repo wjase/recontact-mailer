@@ -9,10 +9,8 @@ package main
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/mail"
-	"time"
 
 	"github.com/dpapathanasiou/go-recaptcha"
 	"github.com/wjase/recontact-mailer/internal/recontact"
@@ -21,7 +19,7 @@ import (
 var logger = log.Default()
 
 func init() {
-	rand.Seed(time.Now().UnixNano())
+
 }
 
 func main() {

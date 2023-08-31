@@ -2,6 +2,7 @@ package recontact
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -13,7 +14,7 @@ import (
 func TestCreateContact(t *testing.T) {
 	request := http.Request{
 		Host: "AHost",
-		Body: ioutil.NopCloser(bytes.NewReader([]byte(`{
+		Body: io.NopCloser(bytes.NewReader([]byte(`{
 			"g-recaptcha-response":"bob",
 			"email":"bob@bob.com",
 			"subject": "a thing",
@@ -42,7 +43,7 @@ func TestCreateContactProxied(t *testing.T) {
 	request := http.Request{
 		Host:   "AHost",
 		Header: http.Header{},
-		Body:   ioutil.NopCloser(bytes.NewReader([]byte(``))),
+		Body:   io.NopCloser(bytes.NewReader([]byte(``))),
 	}
 	request.Header.Add("X-FORWARDED-FOR", "someIP")
 	ip := GetIP(&request)

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -16,17 +16,15 @@ import (
 )
 
 var testAppEnv = AppEnv{
-	toEmail:       "to@some.com",
-	emailHost:     "somehost",
-	emailPort:     "somePort",
-	emailUsername: "emailUser",
-	emailPassword: "emailPass",
+	ToEmail:       "to@some.com",
+	EmailHost:     "somehost",
+	EmailPort:     "somePort",
 }
 
-func sendMatcherFn(matcher *gocrest.Matcher, t *testing.T) sendFn {
+func sendMatcherFn(matcher *gocrest.Matcher[*mailArgs], t *testing.T) sendFn {
 	//type sendFn func(addr, from, subject, body string, to []string) error
 	return func(addr string, from string, subject string, body string, to []string) error {
-		then.AssertThat(t, mailArgs{Addr: addr,
+		then.AssertThat(t, &mailArgs{Addr: addr,
 			From: from,
 			To:   to,
 			Msg:  body,
@@ -56,7 +54,7 @@ func TestContactHandler(t *testing.T) {
 		}`
 
 	badEnv := testAppEnv
-	badEnv.toEmail = "badbad"
+	badEnv.ToEmail = "badbad"
 
 	testCases := []struct {
 		testName    string
@@ -67,7 +65,7 @@ func TestContactHandler(t *testing.T) {
 	}{
 		{
 			testName: "happy case valid captcha",
-			sendFn: sendMatcherFn(is.EqualTo(mailArgs{
+			sendFn: sendMatcherFn(is.EqualTo(&mailArgs{
 				Addr: "somehost:somePort",
 				From: "bob@bob.com",
 				To:   []string{"to@some.com"},
@@ -107,10 +105,10 @@ func TestContactHandler(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.testName, func(t *testing.T) {
-			handler := buildHandleContactFormFn(tC.sendFn, tC.confirmFn, tC.env)
+			handler := BuildHandleContactFormFn(tC.sendFn, tC.confirmFn, tC.env)
 			request := http.Request{
 				Host:   "AHost",
-				Body:   ioutil.NopCloser(bytes.NewReader([]byte(tC.requestBody))),
+				Body:   io.NopCloser(bytes.NewReader([]byte(tC.requestBody))),
 				Header: http.Header{},
 			}
 			response := httptest.NewRecorder()
@@ -119,13 +117,13 @@ func TestContactHandler(t *testing.T) {
 	}
 }
 
-//EqualTo checks if two values are equal. Uses DeepEqual (could be slow).
-//Like DeepEquals, if the types are not the same the matcher returns false.
-//Returns a matcher that will return true if two values are equal.
-func MatchesJson(expected interface{}) *gocrest.Matcher {
-	match := new(gocrest.Matcher)
+// EqualTo checks if two values are equal. Uses DeepEqual (could be slow).
+// Like DeepEquals, if the types are not the same the matcher returns false.
+// Returns a matcher that will return true if two values are equal.
+func MatchesJson[T any](expected interface{}) *gocrest.Matcher[T] {
+	match := new(gocrest.Matcher[T])
 	match.Describe = fmt.Sprintf("value equal to <%v>", expected)
-	match.Matches = func(actual interface{}) bool {
+	match.Matches = func(actual T) bool {
 		return strings.Compare(strings.TrimSpace(asJson(actual)), strings.TrimSpace(asJson(expected))) == 0
 	}
 	return match
