@@ -14,6 +14,7 @@ type confirmFn func(remoteip, response string) (result bool, err error)
 type sendFn func(addr, from, subject, body string, to []string) error
 
 func BuildHandleContactFormFn(sendFn sendFn, confirmFn confirmFn, env AppEnv) func(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("Creating http handler")
 	return func(writer http.ResponseWriter, request *http.Request) {
 		contactRequest, err := NewContactRequest(request)
 		if err != nil {

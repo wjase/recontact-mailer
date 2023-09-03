@@ -25,7 +25,7 @@ func init() {
 func main() {
 	appEnv := recontact.NewAppEnv()
 
-	logger.Println("Starting recontact-mailer...")
+	logger.Println("Starting recontact-mailer server...")
 	recaptcha.Init(appEnv.PrivateKey)
 
 	// send happy email
