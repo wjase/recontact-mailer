@@ -28,6 +28,7 @@ func main() {
 	logger.Println("Starting recontact-mailer server...")
 	recaptcha.Init(appEnv.PrivateKey)
 
+	fmt.Println("Sending  mail to " + appEnv.AdminEmail)
 	// send happy email
 	err := recontact.SendMail(fmt.Sprintf("%s:%s", appEnv.EmailHost, appEnv.EmailPort), (&mail.Address{Name: "App Admin", Address: appEnv.AdminEmail}).String(), "Email Subject", "Recapture started successfully", []string{(&mail.Address{Name: "admin", Address: appEnv.AdminEmail}).String()})
 	if err != nil {
