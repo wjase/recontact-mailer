@@ -1,0 +1,12 @@
+# Protect this file in your filesystem from unauthorized access
+# The private key from Google
+RECAPTCHA_PRIVATE_KEY=bobprivatekey
+# The email address you want to receive the contact details
+TO_MAIL=target@bob.com
+# Email credentials and host address used for sending the email
+EMAIL_HOST=cybernostics.com
+EMAIL_PORT=25
+# this app exposes / on the port specified below
+APP_PORT=7500
+ADMIN_MAIL=admin@bob.com
+ENDPOINT=/testendpoint

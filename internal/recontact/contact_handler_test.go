@@ -16,9 +16,9 @@ import (
 )
 
 var testAppEnv = AppEnv{
-	ToEmail:       "to@some.com",
-	EmailHost:     "somehost",
-	EmailPort:     "somePort",
+	ToEmail:   "to@some.com",
+	EmailHost: "somehost",
+	EmailPort: "somePort",
 }
 
 func sendMatcherFn(matcher *gocrest.Matcher[*mailArgs], t *testing.T) sendFn {
@@ -77,27 +77,27 @@ func TestContactHandler(t *testing.T) {
 		},
 		{
 			testName:    "happy case invalid captcha",
-			sendFn:      sendMatcherFn(is.Nil(), t),
+			sendFn:      sendMatcherFn(is.NilPtr[mailArgs](), t),
 			confirmFn:   confirmFailed,
 			requestBody: happyCasePayloadJson,
 			env:         testAppEnv,
 		},
 		{
 			testName:    "happy case invalid captcha error",
-			sendFn:      sendMatcherFn(is.Nil(), t),
+			sendFn:      sendMatcherFn(is.NilPtr[mailArgs](), t),
 			confirmFn:   confirmFailedError,
 			requestBody: happyCasePayloadJson,
 			env:         testAppEnv,
 		},
 		{
 			testName:    "invalid body error",
-			sendFn:      sendMatcherFn(is.Nil(), t),
+			sendFn:      sendMatcherFn(is.NilPtr[mailArgs](), t),
 			requestBody: "{malformed json",
 			env:         testAppEnv,
 		},
 		{
 			testName:    "bad to email address",
-			sendFn:      sendMatcherFn(is.Nil(), t),
+			sendFn:      sendMatcherFn(is.NilPtr[mailArgs](), t),
 			requestBody: happyCasePayloadJson,
 			env:         badEnv,
 			confirmFn:   confirmOK,

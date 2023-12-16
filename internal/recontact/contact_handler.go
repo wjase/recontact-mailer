@@ -29,6 +29,7 @@ func BuildHandleContactFormFn(sendFn sendFn, confirmFn confirmFn, env AppEnv) fu
 		if err != nil {
 			fmt.Fprintf(writer, "false")
 			fmt.Println("recaptcha failed", string(bytes))
+			writer.WriteHeader(500)
 			return
 		}
 		if result {
@@ -38,6 +39,7 @@ func BuildHandleContactFormFn(sendFn sendFn, confirmFn confirmFn, env AppEnv) fu
 			if err != nil {
 				fmt.Printf("Bad email to address %s", err.Error())
 				fmt.Fprintf(writer, "false")
+				writer.WriteHeader(400)
 				return
 			}
 			m := mailArgs{
@@ -49,6 +51,7 @@ func BuildHandleContactFormFn(sendFn sendFn, confirmFn confirmFn, env AppEnv) fu
 			err = sendFn(m.Addr, m.From, contactRequest.Subject, contactRequest.Message, m.To)
 			if err != nil {
 				fmt.Printf("Couldn't send message %s", contactRequest.Message)
+				writer.WriteHeader(500)
 			}
 		} else {
 			time.Sleep(time.Duration(rnd.Intn(8)) * time.Second)

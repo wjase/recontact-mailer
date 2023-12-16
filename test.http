@@ -1,0 +1,6 @@
+curl -X POST -H "Content-Type: application/json" \
+    -d '{"name": "linuxize", "email": "linuxize@example.com"}' \
+    http://localhost:7500/testcontact
+
+		################################
+		POST 

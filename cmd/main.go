@@ -34,9 +34,17 @@ func main() {
 		logger.Fatal("failed to send mail", err)
 	}
 
+	fmt.Printf("endpoint is %s", appEnv.Endpoint)
+
 	http.HandleFunc(appEnv.Endpoint, recontact.BuildHandleContactFormFn(recontact.SendMail, recaptcha.Confirm, appEnv))
+	http.HandleFunc("/ping", pingHandler)
+
 	logger.Printf("About To start server on port %s\n", appEnv.AppPort)
 	if err := http.ListenAndServe(fmt.Sprintf(":%s", appEnv.AppPort), nil); err != nil {
 		logger.Fatal("failed to start server", err)
 	}
+}
+
+func pingHandler(writer http.ResponseWriter, request *http.Request) {
+	writer.Write([]byte("ping ok"))
 }
