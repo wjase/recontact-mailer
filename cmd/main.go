@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"net/mail"
 
+	"runtime/debug"
+
 	"github.com/dpapathanasiou/go-recaptcha"
 	"github.com/wjase/recontact-mailer/internal/recontact"
 )
@@ -22,10 +24,22 @@ func init() {
 
 }
 
+var Commit = func() string {
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range info.Settings {
+			if setting.Key == "vcs.revision" {
+				return setting.Value
+			}
+		}
+	}
+
+	return ""
+}()
+
 func main() {
 	appEnv := recontact.NewAppEnv()
 
-	logger.Println("Starting recontact-mailer server...")
+	logger.Println("Starting recontact-mailer server commit:" + Commit)
 	recaptcha.Init(appEnv.PrivateKey)
 
 	fmt.Println("Sending  mail to " + appEnv.AdminEmail)
